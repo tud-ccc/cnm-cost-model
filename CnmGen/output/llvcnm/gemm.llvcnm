@@ -1,0 +1,69 @@
+; kernel gemm
+; in A -> V0 : memref<64x256xi32>
+; in B -> V1 : memref<256x256xi32>
+; out C -> V2 : memref<64x256xi32>
+; local V3 : memref<128xi32>
+; local V4 : memref<128xi32>
+; local V5 : memref<128xi32>
+MOVE_IDX(V6, 64)
+MOVE_IDX(V7, 2)
+MOVE_IDX(V8, 2)
+MOVE_IDX(V9, 128)
+MOVE_IDX(V10, 256)
+MOVE_IDX(V11, 256)
+MOVE_IDX(V12, 0)
+.Lloop1:
+MUL_IDX(V13, V12, V10)
+MUL_IDX(V14, V12, V11)
+MOVE_IDX(V15, 0)
+.Lloop3:
+MOVE_I32(V16, 0)
+MOVE_IDX(V17, 0)
+.Lloop5:
+SCALE_IDX(V18, V17)  ; index -> byte address
+STORE_I32(V16, V5[V17])  ; level=WRAM
+INC(V17)
+JNEQ(V17, V9, .Lloop5)
+.Lend6:
+MUL_IDX(V19, V15, V9)
+MOVE_IDX(V20, 0)
+.Lloop7:
+MUL_IDX(V21, V20, V9)
+ADD_IDX(V22, V13, V21)
+DMA_LOAD_I32(V3, V0[V22], 128)
+MOVE_IDX(V23, 0)
+.Lloop9:
+ADD_IDX(V24, V19, V23)
+MUL_IDX(V25, V24, V10)
+ADD_IDX(V26, V25, V21)
+DMA_LOAD_I32(V4, V1[V26], 128)
+SCALE_IDX(V27, V23)  ; index -> byte address
+LOAD_I32(V28, V5[V23])  ; level=WRAM
+MOVE_IDX(V29, 0)
+.Lloop11:
+SCALE_IDX(V30, V29)  ; index -> byte address
+LOAD_I32(V31, V3[V29])  ; level=WRAM
+SCALE_IDX(V32, V29)  ; index -> byte address
+LOAD_I32(V33, V4[V29])  ; level=WRAM
+MUL_I32(V34, V31, V33)
+ADD_I32(V35, V28, V34)
+STORE_I32(V35, V5[V23])  ; level=WRAM
+MOVE_I32(V28, V35)
+INC(V29)
+JNEQ(V29, V9, .Lloop11)
+.Lend12:
+INC(V23)
+JNEQ(V23, V9, .Lloop9)
+.Lend10:
+INC(V20)
+JNEQ(V20, V8, .Lloop7)
+.Lend8:
+ADD_IDX(V36, V14, V19)
+DMA_STORE_I32(V5, V2[V36], 128)
+INC(V15)
+JNEQ(V15, V7, .Lloop3)
+.Lend4:
+INC(V12)
+JNEQ(V12, V6, .Lloop1)
+.Lend2:
+RET(V2)

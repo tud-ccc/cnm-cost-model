@@ -1,0 +1,142 @@
+# Source: /tmp/claude-1015/-home-hamid-farzaneh-CostModelEvaluationRepo-NewEval/c900ab65-0286-4d89-9222-be4c0cdb1b40/scratchpad/all_asm/gemm_uint32_t.s
+# Function analyzed: main
+# Total basic blocks: 23
+# Loops detected: 6
+
+# Loop header=.LBB0_5 nesting_depth=1 blocks=[5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21] instructions=95  <-- extracted as main loop
+# Loop header=.LBB0_7 nesting_depth=2 blocks=[8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21] instructions=80
+# Loop header=.LBB0_12 nesting_depth=3 blocks=[12, 13, 14, 15, 16] instructions=39
+# Loop header=.LBB0_10 nesting_depth=3 blocks=[20] instructions=8
+# Loop header=.LBB0_13 nesting_depth=4 blocks=[13, 14, 15] instructions=20
+# Loop header=.LBB0_14 nesting_depth=5 blocks=[14] instructions=9
+
+# --- extracted main loop body ---
+
+.LBB0_19:
+	lw r2, r22, -24
+	add r2, r2, 1
+	lw r0, r22, -76
+	lw r1, r22, -28
+	add r1, r1, r0
+	sw r22, -28, r1
+	lw r0, r22, -16
+	sw r22, -24, r2
+	jeq r2, r0, .LBB0_20
+
+.LBB0_5:
+	lw r0, r22, -20
+	jgtu r15, r0, .LBB0_19
+
+__bb4:
+	move r1, 0
+	lw r0, r22, -12
+	sw r22, -52, r0
+	jump .LBB0_7
+
+.LBB0_18:
+	move r0, -1
+	lsr_add r0, r0, r18, 3
+	lw r1, r22, -80
+	lsl_add r0, r1, r0, 24
+	lw r21, r22, -48
+	sdma r0, r21, 0
+	add r21, r21, r18
+	lw r1, r22, -44
+	add r1, r1, 1
+	lw r0, r22, -32
+	lw r2, r22, -52
+	add r2, r2, r0
+	sw r22, -52, r2
+	lw r0, r22, -36
+	jgeu r1, r0, .LBB0_19
+
+.LBB0_7:
+	sw r22, -48, r21
+	sw r22, -44, r1
+	jeq r15, 0, .LBB0_8
+
+__bb5:
+	move r14, 0
+	lw r0, r22, -80
+	move r1, r14
+	move r2, r18
+	call r23, memset
+	lw r0, r22, -40
+	jgtu r15, r0, .LBB0_18
+
+__bb6:
+	lw r21, r22, -52
+	lw r1, r22, -28
+
+.LBB0_12:
+	sw r22, -72, r14
+	move r0, -1
+	lsr_add r0, r0, r18, 3
+	sw r22, -88, r0
+	lsl_add r0, r19, r0, 24
+	move r17, 0
+	sw r22, -64, r1
+	ldma r0, r1, 0
+	sw r22, -84, r17
+	sw r22, -68, r21
+
+.LBB0_13:
+	lw r0, r22, -88
+	lsl_add r0, r20, r0, 24
+	ldma r0, r21, 0
+	lw r0, r22, -80
+	lsl_add r16, r0, r17, 2
+	lw r14, r16, 0
+	lw r18, r22, -84
+
+.LBB0_14:
+	lsl_add r0, r19, r18, 2
+	lw r1, r0, 0
+	lsl_add r0, r20, r18, 2
+	lw r0, r0, 0
+	call r23, __mulsi3
+	add r14, r14, r0
+	add r18, r18, 1
+	sw r16, 0, r14
+	jneq r15, r18, .LBB0_14
+
+__bb7:
+	add r17, r17, 1
+	lw r0, r22, -76
+	add r21, r21, r0
+	jneq r17, r15, .LBB0_13
+
+__bb8:
+	lw r18, r22, -56
+	lw r1, r22, -64
+	add r1, r1, r18
+	lw r14, r22, -72
+	add r14, r14, 1
+	lw r21, r22, -68
+	add r21, r21, r18
+	lw r0, r22, -60
+	jltu r14, r0, .LBB0_12
+
+__bb9:
+	jump .LBB0_18
+
+.LBB0_8:
+	lw r0, r22, -40
+	jgtu r15, r0, .LBB0_18
+
+__bb10:
+	move r0, 0
+	lw r1, r22, -28
+
+.LBB0_10:
+	move r2, -1
+	lsr_add r2, r2, r18, 3
+	lsl_add r2, r19, r2, 24
+	ldma r2, r1, 0
+	add r0, r0, 1
+	add r1, r1, r18
+	lw r2, r22, -60
+	jltu r0, r2, .LBB0_10
+
+__bb11:
+	jump .LBB0_18

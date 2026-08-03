@@ -1,0 +1,39 @@
+# Source: /tmp/claude-1015/-home-hamid-farzaneh-CostModelEvaluationRepo-NewEval/c900ab65-0286-4d89-9222-be4c0cdb1b40/scratchpad/all_asm/hst_uint64_t.s
+# Function analyzed: main
+# Total basic blocks: 18
+# Loops detected: 3
+
+# Loop header=.LBB0_10 nesting_depth=1 blocks=[10, 11, 12] instructions=23  <-- extracted as main loop
+# Loop header=.LBB0_16 nesting_depth=1 blocks=[15] instructions=9
+# Loop header=.LBB0_11 nesting_depth=2 blocks=[11] instructions=13
+
+# --- extracted main loop body ---
+
+.LBB0_10:
+	move r0, -1
+	lsr_add r0, r0, r14, 3
+	lw r16, r22, -36
+	lsl_add r0, r16, r0, 24
+	ldma r0, r15, 0
+	lw r19, r22, -32
+
+.LBB0_11:
+	ld d0, r16, 0
+	movd d2, d20
+	call r23, __muldi3
+	lsrx r2, r0, 12
+	lsr_add r3, r2, r1, 12
+	lsr r2, r0, 12
+	lsl_add r0, r17, r3, 3
+	ld d2, r0, 0
+	add r3, r3, 1
+	addc r2, r2, 0
+	sd r0, 0, d2
+	add r16, r16, 8
+	add r19, r19, -1, nz, .LBB0_11
+
+__bb7:
+	add r18, r18, 1
+	add r15, r15, r14
+	lw r0, r22, -40
+	jneq r18, r0, .LBB0_10

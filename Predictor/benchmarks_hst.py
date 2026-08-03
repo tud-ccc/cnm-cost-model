@@ -1,0 +1,76 @@
+import csv
+import multiprocessing
+from pathlib import Path
+
+from configuration import hst_file
+from kernels.Hst import TestOp
+from load_lut import loadBaseInstructionsDict, loadDmaDict, loadFuncInstructionsDict
+from support import LUTType, data_type_from_string
+
+_OUTPUT_FILE = Path(__file__).resolve().parent / "output" / "hst_comparison.csv"
+
+# Number of worker processes used to run predictions in parallel. Each row's
+# TestOp call is an independent, CPU-bound pure-Python simulation with no
+# shared state -- multiprocessing (not threading, which the GIL would
+# serialize back to one core) scales close to linearly with this.
+PARALLEL_FACTOR = 48
+
+_luts = None
+
+
+def _init_worker():
+    global _luts
+    _luts = {
+        LUTType.BaseInsLUT: loadBaseInstructionsDict(),
+        LUTType.DmaLUT: loadDmaDict(),
+        LUTType.FuncInsLut: loadFuncInstructionsDict(),
+    }
+
+
+def _predict_row(row):
+    # A failed/faulted hardware run has no numeric latency to compare
+    # against -- skip it rather than crash.
+    if row["latency"] == "NA" or row["correct"] != "True":
+        return None
+
+    measured = float(row["latency"])
+    # hst.csv's "iteration" column is the sweep's chunk count, not
+    # ITER_PER_THREAD -- run_benchmark.py passes iteration*buffer_size as
+    # MAP_ITER_DIMS[0] (see Hst/run_script/run_benchmark.py).
+    iter_per_thread = int(row["iteration"]) * int(row["buffer_size"])
+    predicted = TestOp(
+        _luts,
+        int(row["thread"]),
+        data_type_from_string(row["data_type"]),
+        iter_per_thread,
+        int(row["buffer_size"]),
+    )
+    error_percent = ((predicted - measured) / measured) * 100
+
+    return (
+        f'{row["data_type"]},{row["thread"]},{row["iteration"]},{row["buffer_size"]},'
+        f"{measured:.6f},{predicted:.6f},{error_percent:.2f}"
+    )
+
+
+def main():
+    with open(hst_file, newline="") as result_file:
+        rows = list(csv.DictReader(result_file))
+
+    header = "data_type,thread,iteration,buffer_size,measured,predicted,error_percent"
+    print(header)
+
+    _OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(_OUTPUT_FILE, "w") as out_file:
+        out_file.write(header + "\n")
+        out_file.flush()
+        with multiprocessing.Pool(PARALLEL_FACTOR, initializer=_init_worker) as pool:
+            for line in pool.imap(_predict_row, rows):
+                if line is not None:
+                    print(line)
+                    out_file.write(line + "\n")
+                    out_file.flush()
+
+
+if __name__ == "__main__":
+    main()

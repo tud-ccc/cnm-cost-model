@@ -1,0 +1,44 @@
+; kernel hst
+; in x -> V0 : memref<1024xi32>
+; out bins -> V1 : memref<256xi32>
+; local V2 : memref<128xi32>
+; local V3 : memref<256xi32>
+MOVE_IDX(V4, 256)
+MOVE_I32(V5, 0)
+MOVE_IDX(V6, 0)
+.Lloop1:
+SCALE_IDX(V7, V6)  ; index -> byte address
+STORE_I32(V5, V3[V6])  ; level=WRAM
+INC(V6)
+JNEQ(V6, V4, .Lloop1)
+.Lend2:
+MOVE_IDX(V8, 8)
+MOVE_IDX(V9, 128)
+MOVE_IDX(V10, 128)
+MOVE_I32(V11, 256)
+MOVE_I32(V12, 12)
+MOVE_I32(V13, 1)
+MOVE_IDX(V14, 0)
+.Lloop3:
+MUL_IDX(V15, V14, V9)
+DMA_LOAD_I32(V2, V0[V15], 128)
+MOVE_IDX(V16, 0)
+.Lloop5:
+LOAD_I32(V17, V2[V16])  ; level=WRAM
+MUL_I32(V18, V17, V11)
+SHR_I32(V19, V18, V12)
+INDEX_CAST_IDX(V20, V19)
+SCALE_IDX(V21, V20)  ; index -> byte address
+LOAD_I32(V22, V3[V20])  ; level=WRAM
+ADD_I32(V23, V22, V13)
+STORE_I32(V23, V3[V20])  ; level=WRAM
+ADD_IDX(V2, V2, 1)  ; pointer bump
+INC(V16)
+JNEQ(V16, V10, .Lloop5)
+.Lend6:
+INC(V14)
+JNEQ(V14, V8, .Lloop3)
+.Lend4:
+MOVE_IDX(V24, 0)
+DMA_STORE_I32(V3, V1[V24], 256)
+RET(V1)

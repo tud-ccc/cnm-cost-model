@@ -1,0 +1,64 @@
+; kernel scan
+; in x -> V0 : memref<1024xi32>
+; out y -> V1 : memref<1024xi32>
+; local V2 : memref<128xi32>
+; local V3 : memref<16xi32>
+MOVE_IDX(V4, 0)
+MOVE_I32(V5, 0)
+MOVE_IDX(V6, 8)
+MOVE_IDX(V7, 128)
+MOVE_IDX(V8, 128)
+MOVE_IDX(V9, 16)
+MOVE_IDX(V10, 8)
+MOVE_I32(V12, V5)
+MOVE_IDX(V11, 0)
+.Lloop1:
+MUL_IDX(V13, V11, V7)
+DMA_LOAD_I32(V2, V0[V13], 128)
+MOVE_IDX(V14, 0)
+.Lloop3:
+LOAD_I32(V15, V2[V14])  ; level=WRAM
+ADD_I32(V12, V12, V15)
+ADD_IDX(V2, V2, 1)  ; pointer bump
+INCJNEQ(V14, V8, .Lloop3)  ; fused trip-decrement+branch
+.Lend4:
+INC(V11)
+JNEQ(V11, V6, .Lloop1)
+.Lend2:
+SCALE_IDX(V16, V4)  ; index -> byte address
+STORE_I32(V12, V3[V4])  ; level=WRAM
+BARRIER()
+MOVE_I32(V18, V5)
+MOVE_IDX(V17, 0)
+.Lloop5:
+LT_I1(V19, V17, V10)
+JEQ(V19, 0, .Lelse7)
+SCALE_IDX(V20, V17)  ; index -> byte address
+LOAD_I32(V21, V3[V17])  ; level=WRAM
+ADD_I32(V22, V18, V21)
+MOVE_I32(V18, V22)
+JUMP(.Lendif8)
+.Lelse7:
+.Lendif8:
+INC(V17)
+JNEQ(V17, V9, .Lloop5)
+.Lend6:
+MOVE_IDX(V23, 0)
+.Lloop9:
+MUL_IDX(V24, V23, V7)
+DMA_LOAD_I32(V2, V0[V24], 128)
+MOVE_IDX(V25, 0)
+.Lloop11:
+SCALE_IDX(V26, V25)  ; index -> byte address
+LOAD_I32(V27, V2[V25])  ; level=WRAM
+ADD_I32(V28, V18, V27)
+STORE_I32(V28, V2[V25])  ; level=WRAM
+MOVE_I32(V18, V28)
+INC(V25)
+JNEQ(V25, V8, .Lloop11)
+.Lend12:
+DMA_STORE_I32(V2, V1[V24], 128)
+INC(V23)
+JNEQ(V23, V6, .Lloop9)
+.Lend10:
+RET(V1)

@@ -1,0 +1,13 @@
+operation,data_type,thread,iteration,vec_length,buffer_size,latency,correct
+MATVEC,uint32_t,16,16,128,16,1.544667,True
+MATVEC,uint32_t,16,16,256,16,2.984,True
+MATVEC,uint32_t,16,16,512,16,5.857667,True
+MATVEC,uint32_t,16,16,1024,16,11.851667,True
+MATVEC,uint32_t,16,32,128,16,3.010667,True
+MATVEC,uint32_t,16,32,128,32,2.877,True
+MATVEC,uint32_t,16,32,256,16,5.880333,True
+MATVEC,uint32_t,16,32,256,32,5.633,True
+MATVEC,uint32_t,16,32,512,16,11.621667,True
+MATVEC,uint32_t,16,32,512,32,11.127333,True
+MATVEC,uint32_t,16,32,1024,16,23.129,True
+MATVEC,uint32_t,16,32,1024,32,22.479,True

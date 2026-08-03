@@ -1,0 +1,38 @@
+# Source: /tmp/claude-1015/-home-hamid-farzaneh-CostModelEvaluationRepo-NewEval/c900ab65-0286-4d89-9222-be4c0cdb1b40/scratchpad/all_asm/reduceop_uint64_t.s
+# Function analyzed: main
+# Total basic blocks: 16
+# Loops detected: 3
+
+# Loop header=.LBB0_8 nesting_depth=1 blocks=[8, 9, 10] instructions=22  <-- extracted as main loop
+# Loop header=.LBB0_14 nesting_depth=1 blocks=[13] instructions=11
+# Loop header=.LBB0_9 nesting_depth=2 blocks=[9] instructions=9
+
+# --- extracted main loop body ---
+
+.LBB0_8:
+	move r3, -1
+	lsr_add r3, r3, r14, 3
+	lsl_add r4, r15, r3, 24
+	ldma r4, r0, 0
+	lsl_add r3, r17, r3, 24
+	ldma r3, r1, 0
+	move r3, r15
+	move r4, r17
+	move r5, r18
+
+.LBB0_9:
+	ld d6, r3, 0
+	ld d8, r4, 0
+	add r7, r7, r21
+	addc r6, r6, r20
+	add r21, r7, r9
+	addc r20, r6, r8
+	add r4, r4, 8
+	add r3, r3, 8
+	add r5, r5, -1, nz, .LBB0_9
+
+__bb6:
+	add r0, r0, r14
+	add r2, r2, 1
+	add r1, r1, r14
+	jneq r2, r19, .LBB0_8
