@@ -41,7 +41,7 @@ cloning the repo is enough to inspect predictions. To regenerate a kernel's
 comparison:
 
 ```bash
-cd Predictor
+cd cnm-cost-model/Predictor
 python3 benchmarks_vecadd.py
 python3 benchmarks_vecadd_xdsl.py
 ```
@@ -52,8 +52,8 @@ or everything at once:
 python3 run_full_comparison.py
 ```
 
-For Samsung HBM-PIM (needs the `Samsung/PIMSimulator` submodule and a C++
-toolchain):
+For Samsung HBM-PIM (needs the `Samsung/PIMSimulator` submodule, a C++17
+toolchain, `scons`, and `googletest`):
 
 ```bash
 git submodule update --init Samsung/PIMSimulator
