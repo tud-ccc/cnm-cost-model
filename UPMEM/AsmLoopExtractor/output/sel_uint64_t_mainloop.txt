@@ -1,0 +1,51 @@
+# Source: /tmp/claude-1015/-home-hamid-farzaneh-CostModelEvaluationRepo-NewEval/c900ab65-0286-4d89-9222-be4c0cdb1b40/scratchpad/all_asm/sel_uint64_t.s
+# Function analyzed: main
+# Total basic blocks: 17
+# Loops detected: 3
+
+# Loop header=.LBB0_8 nesting_depth=1 blocks=[8, 9, 10, 11, 12, 13] instructions=29  <-- extracted as main loop
+# Loop header=.LBB0_14 nesting_depth=1 blocks=[15] instructions=14
+# Loop header=.LBB0_9 nesting_depth=2 blocks=[10, 11, 12, 13] instructions=10
+
+# --- extracted main loop body ---
+
+.LBB0_12:
+	move.u d4, r5
+	sd r17, 0, d4
+	move r4, -1
+	lsr_add r4, r4, r14, 3
+	lsl_add r4, r16, r4, 24
+	sdma r4, r2, 0
+	sdma r17, r21, 3
+	add r0, r0, r14
+	add r2, r2, r14
+	add r3, r3, 1
+	add r21, r21, 32
+	jeq r3, r18, .LBB0_15
+
+.LBB0_8:
+	move r4, -1
+	lsr_add r4, r4, r14, 3
+	lsl_add r4, r15, r4, 24
+	ldma r4, r0, 0
+	move r4, r15
+	move r6, r19
+	move r5, r1, true, .LBB0_9
+
+.LBB0_11:
+	add r4, r4, 8
+	add r6, r6, -1, z, .LBB0_12
+
+.LBB0_9:
+	ld d8, r4, 0
+	and r11, r9, 1
+	and r10, r8, 0
+	jneq r11, r13, .LBB0_11
+
+__bb6:
+	jneq r10, r12, .LBB0_11
+
+__bb7:
+	lsl_add r7, r16, r5, 3
+	sd r7, 0, d8
+	add r5, r5, 1, true, .LBB0_11

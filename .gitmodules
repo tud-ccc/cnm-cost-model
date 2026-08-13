@@ -1,0 +1,4 @@
+[submodule "Samsung/PIMSimulator"]
+	path = Samsung/PIMSimulator
+	url = https://github.com/SAITPublic/PIMSimulator.git
+	branch = dev

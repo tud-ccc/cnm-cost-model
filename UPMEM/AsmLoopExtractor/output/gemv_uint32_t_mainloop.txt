@@ -1,0 +1,109 @@
+# Source: /tmp/claude-1015/-home-hamid-farzaneh-CostModelEvaluationRepo-NewEval/c900ab65-0286-4d89-9222-be4c0cdb1b40/scratchpad/all_asm/gemv_uint32_t.s
+# Function analyzed: main
+# Total basic blocks: 24
+# Loops detected: 5
+
+# Loop header=.LBB0_5 nesting_depth=1 blocks=[5, 6, 7] instructions=11
+# Loop header=.LBB0_12 nesting_depth=1 blocks=[9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] instructions=73  <-- extracted as main loop
+# Loop header=.LBB0_14 nesting_depth=2 blocks=[13, 14, 15] instructions=25
+# Loop header=.LBB0_20 nesting_depth=2 blocks=[18] instructions=11
+# Loop header=.LBB0_15 nesting_depth=3 blocks=[14] instructions=7
+
+# --- extracted main loop body ---
+
+.LBB0_17:
+	move r0, -1
+	lsr_add r0, r0, r18, 3
+	lsl_add r0, r16, r0, 24
+	lw r14, r22, -36
+	sdma r0, r14, 0
+	add r14, r14, r18
+	move r1, 0
+	lw r0, r22, -16
+
+.LBB0_18:
+	lw r3, r22, -32
+	lw r9, r22, -28
+	add r3, r3, 1
+	lw r2, r22, -20
+	add r9, r9, r2
+	jeq r3, r0, .LBB0_8
+
+.LBB0_12:
+	sw r22, -36, r14
+	sw r22, -40, r1
+	sw r22, -32, r3
+	sw r22, -28, r9
+	jeq r20, 0, .LBB0_19
+
+__bb5:
+	move r21, 0
+	lw r14, r22, -12
+	move r15, r9
+	move r17, r21
+
+.LBB0_14:
+	move r0, -1
+	move r16, r18
+	lsr_add r0, r0, r18, 3
+	lsl_add r1, r19, r0, 24
+	ldma r1, r15, 0
+	lsl_add r0, r6, r0, 24
+	ldma r0, r14, 0
+	move r18, r19
+	move r19, r6
+
+.LBB0_15:
+	lw r1, r18, 0
+	lw r0, r19, 0
+	call r23, __mulsi3
+	add r17, r0, r17
+	add r19, r19, 4
+	add r18, r18, 4
+	add r20, r20, -1, nz, .LBB0_15
+
+__bb6:
+	move r18, r16
+	add r15, r15, r18
+	add r21, r21, 1
+	add r14, r14, r18
+	lw r20, r22, -48
+	lw r19, r22, -44
+	lw r6, r22, -56
+	lw r7, r22, -52
+	jltu r21, r7, .LBB0_14
+
+__bb7:
+	jump .LBB0_21
+
+.LBB0_19:
+	move r17, 0
+	move r0, r17
+	move r1, r17
+	lw r8, r22, -12
+
+.LBB0_20:
+	add r2, r8, r0
+	add r3, r9, r0
+	move r4, -1
+	lsr_add r4, r4, r18, 3
+	lsl_add r5, r19, r4, 24
+	ldma r5, r3, 0
+	lsl_add r3, r6, r4, 24
+	ldma r3, r2, 0
+	add r1, r1, 1
+	add r0, r0, r18
+	jltu r1, r7, .LBB0_20
+
+.LBB0_21:
+	lw r16, r22, -24
+	lw r1, r22, -40
+	lsl_add r0, r16, r1, 2
+	add r1, r1, 1
+	sw r0, 0, r17
+	jeq r1, r20, .LBB0_17
+
+__bb8:
+	lw r0, r22, -16
+	lw r14, r22, -36
+	jump .LBB0_18

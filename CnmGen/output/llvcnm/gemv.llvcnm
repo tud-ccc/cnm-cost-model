@@ -1,0 +1,40 @@
+; kernel gemv
+; in A -> V0 : memref<64x256xi32>
+; in x -> V1 : memref<256xi32>
+; out y -> V2 : memref<64xi32>
+; local V3 : memref<128xi32>
+; local V4 : memref<128xi32>
+MOVE_IDX(V5, 64)
+MOVE_IDX(V6, 2)
+MOVE_IDX(V7, 128)
+MOVE_IDX(V8, 128)
+MOVE_IDX(V9, 256)
+MOVE_IDX(V10, 0)
+.Lloop1:
+MOVE_I32(V11, 0)
+MUL_IDX(V12, V10, V9)
+MOVE_IDX(V13, 0)
+.Lloop3:
+MUL_IDX(V14, V13, V7)
+ADD_IDX(V15, V12, V14)
+DMA_LOAD_I32(V3, V0[V15], 128)
+DMA_LOAD_I32(V4, V1[V14], 128)
+MOVE_IDX(V16, 0)
+.Lloop5:
+LOAD_I32(V17, V3[V16])  ; level=WRAM
+LOAD_I32(V18, V4[V16])  ; level=WRAM
+MUL_I32(V19, V17, V18)
+ADD_I32(V11, V11, V19)
+ADD_IDX(V3, V3, 1)  ; pointer bump
+ADD_IDX(V4, V4, 1)  ; pointer bump
+INCJNEQ(V16, V8, .Lloop5)  ; fused trip-decrement+branch
+.Lend6:
+INC(V13)
+JNEQ(V13, V6, .Lloop3)
+.Lend4:
+SCALE_IDX(V20, V10)  ; index -> byte address
+STORE_I32(V11, V2[V10])  ; level=MRAM
+INC(V10)
+JNEQ(V10, V5, .Lloop1)
+.Lend2:
+RET(V2)

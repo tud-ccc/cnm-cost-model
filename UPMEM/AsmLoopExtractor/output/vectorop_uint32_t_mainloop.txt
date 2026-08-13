@@ -1,0 +1,41 @@
+# Source: /tmp/claude-1015/-home-hamid-farzaneh-CostModelEvaluationRepo-NewEval/c900ab65-0286-4d89-9222-be4c0cdb1b40/scratchpad/all_asm/vectorop_uint32_t.s
+# Function analyzed: main
+# Total basic blocks: 14
+# Loops detected: 3
+
+# Loop header=.LBB0_7 nesting_depth=1 blocks=[7, 8, 9] instructions=25  <-- extracted as main loop
+# Loop header=.LBB0_12 nesting_depth=1 blocks=[12] instructions=14
+# Loop header=.LBB0_8 nesting_depth=2 blocks=[8] instructions=9
+
+# --- extracted main loop body ---
+
+.LBB0_7:
+	move r5, -1
+	lsr_add r5, r5, r14, 3
+	lsl_add r6, r15, r5, 24
+	ldma r6, r0, 0
+	lsl_add r5, r16, r5, 24
+	ldma r5, r1, 0
+	move r5, r2
+
+.LBB0_8:
+	lsl_add r6, r15, r5, 2
+	lw r6, r6, 0
+	lsl_add r7, r16, r5, 2
+	lw r7, r7, 0
+	add r6, r7, r6
+	lsl_add r7, r17, r5, 2
+	add r5, r5, 1
+	sw r7, 0, r6
+	jneq r19, r5, .LBB0_8
+
+__bb5:
+	move r5, -1
+	lsr_add r5, r5, r14, 3
+	lsl_add r5, r17, r5, 24
+	sdma r5, r3, 0
+	add r0, r0, r14
+	add r1, r1, r14
+	add r4, r4, 1
+	add r3, r3, r14
+	jneq r4, r18, .LBB0_7

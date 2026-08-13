@@ -1,0 +1,25 @@
+# Ours -- builds bench_kernels.cpp against Samsung/PIMSimulator's own
+# libdramsim2 library (built separately by PIMSimulator's own, unmodified
+# Sconstruct: `cd ../PIMSimulator && scons`). Keeps our driver code and
+# build config entirely out of the vendored tree.
+import os
+from os.path import join as joinpath
+
+root_path = Dir('.').abspath
+pim_sim_path = joinpath(root_path, '..', 'PIMSimulator')
+
+env = Environment()
+env.Append(CXXFLAGS=' -g -O2 -std=c++17 -Wall -Wno-reorder -Wno-sign-compare')
+env.Append(LINKFLAGS=' -g -O2 -std=c++17')
+
+env.Program(
+    target='bench_kernels',
+    source=['bench_kernels.cpp'],
+    CPPPATH=[
+        joinpath(pim_sim_path, 'src'),
+        joinpath(pim_sim_path, 'lib'),
+        joinpath(pim_sim_path, 'tools'),
+    ],
+    LIBPATH=[joinpath(pim_sim_path, 'libdramsim'), pim_sim_path],
+    LIBS=['dramsim2', 'gtest', 'pthread'],
+)

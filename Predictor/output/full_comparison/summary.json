@@ -1,0 +1,100 @@
+{
+  "VectorOp": {
+    "path_a": {
+      "n": 557,
+      "mean_abs_error": 5.353159784560144,
+      "worst_case": 12.43,
+      "best_case": 0.0
+    },
+    "path_b": {
+      "n": 557,
+      "mean_abs_error": 5.655583482944344,
+      "worst_case": 16.88,
+      "best_case": 0.06
+    }
+  },
+  "ReduceOp": {
+    "path_a": {
+      "n": 608,
+      "mean_abs_error": 2.1496710526315788,
+      "worst_case": 11.41,
+      "best_case": 0.0
+    },
+    "path_b": {
+      "n": 608,
+      "mean_abs_error": 3.2736677631578948,
+      "worst_case": 17.73,
+      "best_case": 0.01
+    }
+  },
+  "Scan": {
+    "path_a": {
+      "n": 655,
+      "mean_abs_error": 1.58,
+      "worst_case": 15.25,
+      "best_case": 0.0
+    },
+    "path_b": {
+      "n": 655,
+      "mean_abs_error": 3.403679389312977,
+      "worst_case": 15.42,
+      "best_case": 0.01
+    }
+  },
+  "Hst": {
+    "path_a": {
+      "n": 580,
+      "mean_abs_error": 1.160206896551724,
+      "worst_case": 7.47,
+      "best_case": 0.0
+    },
+    "path_b": {
+      "n": 580,
+      "mean_abs_error": 1.7859827586206896,
+      "worst_case": 8.5,
+      "best_case": 0.23
+    }
+  },
+  "Sel": {
+    "path_a": {
+      "n": 563,
+      "mean_abs_error": 3.4611900532859683,
+      "worst_case": 13.66,
+      "best_case": 0.01
+    },
+    "path_b": {
+      "n": 563,
+      "mean_abs_error": 4.3162877442273535,
+      "worst_case": 13.66,
+      "best_case": 0.04
+    }
+  },
+  "Gemv": {
+    "path_a": {
+      "n": 1988,
+      "mean_abs_error": 1.227540241448692,
+      "worst_case": 9.97,
+      "best_case": 0.0
+    },
+    "path_b": {
+      "n": 1988,
+      "mean_abs_error": 4.199818913480885,
+      "worst_case": 19.1,
+      "best_case": 0.0
+    }
+  },
+  "Gemm": {
+    "path_a": {
+      "n": 4835,
+      "mean_abs_error": 6.783561530506721,
+      "worst_case": 13.67,
+      "best_case": 4.96
+    },
+    "path_b": {
+      "n": 4835,
+      "mean_abs_error": 9.0067259565667,
+      "worst_case": 19.9,
+      "best_case": 5.91
+    }
+  }
+}

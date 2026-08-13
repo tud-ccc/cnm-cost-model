@@ -1,0 +1,32 @@
+; kernel vecadd
+; in A -> V0 : memref<1024xi32>
+; in B -> V1 : memref<1024xi32>
+; out C -> V2 : memref<1024xi32>
+; local V3 : memref<128xi32>
+; local V4 : memref<128xi32>
+; local V5 : memref<128xi32>
+MOVE_IDX(V6, 8)
+MOVE_IDX(V7, 0)
+.Lloop1:
+MOVE_IDX(V8, 128)
+MUL_IDX(V9, V7, V8)
+DMA_LOAD_I32(V3, V0[V9], 128)
+DMA_LOAD_I32(V4, V1[V9], 128)
+MOVE_IDX(V10, 128)
+MOVE_IDX(V11, 0)
+.Lloop3:
+SCALE_IDX(V12, V11)  ; index -> byte address
+LOAD_I32(V13, V3[V11])  ; level=WRAM
+SCALE_IDX(V14, V11)  ; index -> byte address
+LOAD_I32(V15, V4[V11])  ; level=WRAM
+ADD_I32(V16, V13, V15)
+SCALE_IDX(V17, V11)  ; index -> byte address
+STORE_I32(V16, V5[V11])  ; level=WRAM
+INC(V11)
+JNEQ(V11, V10, .Lloop3)
+.Lend4:
+DMA_STORE_I32(V5, V2[V9], 128)
+INC(V7)
+JNEQ(V7, V6, .Lloop1)
+.Lend2:
+RET(V2)

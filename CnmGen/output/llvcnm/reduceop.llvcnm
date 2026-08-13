@@ -1,0 +1,30 @@
+; kernel reduceop
+; in A -> V0 : memref<1024xi32>
+; in B -> V1 : memref<1024xi32>
+; out acc -> V2 : memref<i32>
+; local V3 : memref<128xi32>
+; local V4 : memref<128xi32>
+MOVE_I32(V5, 0)
+MOVE_IDX(V6, 8)
+MOVE_IDX(V7, 128)
+MOVE_IDX(V8, 128)
+MOVE_IDX(V9, 0)
+.Lloop1:
+MUL_IDX(V10, V9, V7)
+DMA_LOAD_I32(V3, V0[V10], 128)
+DMA_LOAD_I32(V4, V1[V10], 128)
+MOVE_IDX(V11, 0)
+.Lloop3:
+LOAD_I32(V12, V3[V11])  ; level=WRAM
+LOAD_I32(V13, V4[V11])  ; level=WRAM
+ADD_I32(V14, V5, V12)
+ADD_I32(V5, V14, V13)
+ADD_IDX(V3, V3, 1)  ; pointer bump
+ADD_IDX(V4, V4, 1)  ; pointer bump
+INCJNEQ(V11, V8, .Lloop3)  ; fused trip-decrement+branch
+.Lend4:
+INC(V9)
+JNEQ(V9, V6, .Lloop1)
+.Lend2:
+STORE_I32(V5, V2[])  ; level=MRAM
+RET(V2)
