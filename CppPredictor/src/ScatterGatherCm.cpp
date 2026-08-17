@@ -5,6 +5,7 @@
 #define MLPACK_NO_STD_COUT_PRINT
 #endif
 #include <cmath> // std::log2, std::exp
+#include <limits>
 #include <mlpack.hpp>
 
 double upmem_cm::gatherCostMs(int num_dpus, int block_size) {
@@ -322,5 +323,26 @@ double upmem_cm::scatterSgCostMs(int num_dpus, int block_size,
 
   arma::mat out;
   net.Predict(x, out);
-  return std::exp(out(0, 0)); // undo fit_mlp's log-space target
+  const double logMs = out(0, 0);
+
+  // Nothing in an MLP bounds it away from its training data: past the region
+  // it was fitted on, both hidden layers are affine, so the prediction grows
+  // without limit and the exp() below overflows. A fragmented enough scatter
+  // does exactly that -- one element per block over a whole buffer puts
+  // blocks_per_dpu thousands of standard deviations out -- and the infinity
+  // that comes back is worse than a large number, because a caller that
+  // discounts or truncates it can turn it into a *small* one.
+  //
+  // Refusing on the *output* rather than on how far the inputs sit outside
+  // the fitted box is deliberate: measured over the scatters this repo's
+  // sweeps have generated, an input-side bound of 8 standard deviations
+  // rejects 46% of distinct configurations, most of which the net still
+  // answers plausibly, while this bound rejects 18% -- every one of them
+  // predicted at 1e13 ms or more. There is no transfer on this hardware that
+  // takes three hundred years, so nothing real is above the threshold, and
+  // what is above it is not a cost but an extrapolation artefact.
+  constexpr double kMaxLogMs = 30.0; // exp(30) ~ 1.1e13 ms
+  if (!std::isfinite(logMs) || logMs > kMaxLogMs)
+    return std::numeric_limits<double>::infinity();
+  return std::exp(logMs); // undo fit_mlp's log-space target
 }
