@@ -331,6 +331,14 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
       const Op &op = bc.ops[th.pc];
       if (op.kind == OpKind::LoopStart) {
         const LoopMeta &meta = bc.loops[op.a];
+        // A loop that never repeats costs nothing and its body never runs.
+        // Falling into the body would both price instructions that are not
+        // executed and leave loop_iter past the count at the matching
+        // LoopEnd, where the repeats still owed are computed by subtraction.
+        if (meta.count == 0) {
+          th.pc = meta.end_pc + 1;
+          continue;
+        }
         std::optional<double> rate =
             extrapolate ? invocation[op.a].rate : std::nullopt;
         std::optional<double> dma_rate;
@@ -418,7 +426,10 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
             within_dma.last_value = next_available_dma;
 
           if (rate && (!meta.has_dma || dma_rate)) {
-            uint32_t remaining = meta.count - it;
+            // Saturating: `it` can only exceed the count if the body was
+            // entered on a loop that had none to give, and an unsigned
+            // wrap here buys 2^32 repeats of it.
+            uint32_t remaining = it < meta.count ? meta.count - it : 0u;
             th.next_available += remaining * *rate;
             if (meta.has_dma && n == 1)
               next_available_dma += remaining * *dma_rate;
