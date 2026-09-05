@@ -142,15 +142,22 @@ Bytecode compileProgram(const std::vector<SimInsn> &insns,
 std::optional<double> detectAverageRate(const std::vector<double> &samples,
                                         size_t base_window, double tol,
                                         size_t max_scale) {
+  // The wide window of one scale is the narrow window of the next: both span
+  // [size - 2*base_window*scale, size), summed in the same order from a zero
+  // accumulator, so they are the same number down to the last bit and the
+  // second scale onwards gets its narrow sum for free.
+  double carried = 0;
   for (size_t scale = 1; scale <= max_scale; scale *= 2) {
     size_t w = base_window * scale;
     if (2 * w > samples.size())
       return std::nullopt;
-    double small = 0, large = 0;
-    for (size_t i = samples.size() - w; i < samples.size(); i++)
-      small += samples[i];
+    double small = carried, large = 0;
+    if (scale == 1)
+      for (size_t i = samples.size() - w; i < samples.size(); i++)
+        small += samples[i];
     for (size_t i = samples.size() - 2 * w; i < samples.size(); i++)
       large += samples[i];
+    carried = large;
     small /= static_cast<double>(w);
     large /= static_cast<double>(2 * w);
     if (std::abs(small - large) <=
@@ -194,15 +201,28 @@ struct RateTracker {
 //     every thread has arrived, all of them resume together at max(arrival)
 //     + the barrier's cost, charged once and not per thread.
 
+/// Everything the issue scan looks at, and nothing else. The scan runs over
+/// every thread on every dispatch, so this is kept to a handful of bytes:
+/// the loop bookkeeping lives in a parallel ThreadLoops array instead, which
+/// keeps the scan walking one small contiguous span rather than n objects a
+/// few hundred bytes apart.
 struct SimThread {
   uint32_t tid = 0;
   uint32_t pc = 0;
   double next_available = 1;
   bool parked = false;
+  /// Whether `pc` sits on the Halt op, cached at every point the cursor
+  /// moves. The scan would otherwise chase `pc` into the op array once per
+  /// thread per dispatch to ask the same question.
+  bool halted = false;
+};
+
+/// A thread's per-loop state, indexed by loop id. Touched only when a cursor
+/// crosses a loop marker, which is rare next to the issue scan.
+struct ThreadLoops {
   /// Guard op pc → the op pc to jump to, for ifthread regions this thread is
   /// not part of.
   std::unordered_map<uint32_t, uint32_t> cond_jumps;
-  // Per-loop state, indexed by loop id.
   std::vector<uint32_t> loop_iter;
   std::vector<double> invocation_start;
   std::vector<double> invocation_start_dma;
@@ -279,21 +299,29 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
   const size_t history_cap = 2 * window * kMaxScale;
 
   std::vector<SimThread> threads(n);
+  std::vector<ThreadLoops> loop_state(n);
+  // A program with no ifthread region gives every thread an empty jump table,
+  // and resolve's inner loop can then skip the lookup outright rather than
+  // hashing its cursor at every step of every dispatch.
+  bool any_cond_jumps = false;
   for (int i = 0; i < n; i++) {
     SimThread &th = threads[i];
+    ThreadLoops &ls = loop_state[i];
     th.tid = static_cast<uint32_t>(i);
-    th.loop_iter.assign(n_loops, 0);
-    th.invocation_start.assign(n_loops, 0);
-    th.invocation_start_dma.assign(n_loops, 0);
-    th.within.assign(n_loops, {});
-    th.within_dma.assign(n_loops, {});
+    ls.loop_iter.assign(n_loops, 0);
+    ls.invocation_start.assign(n_loops, 0);
+    ls.invocation_start_dma.assign(n_loops, 0);
+    ls.within.assign(n_loops, {});
+    ls.within_dma.assign(n_loops, {});
     for (const auto &ci : main_conds_) {
       bool allowed =
           std::count(ci.allowed_tids.begin(), ci.allowed_tids.end(), i) > 0;
-      if (!allowed)
-        th.cond_jumps[bc.op_of_ins[ci.guard_idx]] =
+      if (!allowed) {
+        ls.cond_jumps[bc.op_of_ins[ci.guard_idx]] =
             ci.end_idx < bc.op_of_ins.size() ? bc.op_of_ins[ci.end_idx]
                                              : halt_pc;
+        any_cond_jumps = true;
+      }
     }
   }
 
@@ -323,10 +351,14 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
   // Resolves the zero-cost loop markers at a thread's cursor, which is also
   // where a converged loop or invocation gets skipped.
   auto resolve = [&](SimThread &th) {
+    ThreadLoops &ls = loop_state[th.tid];
     while (true) {
-      if (auto jump = th.cond_jumps.find(th.pc); jump != th.cond_jumps.end()) {
-        th.pc = jump->second;
-        continue;
+      if (any_cond_jumps) {
+        auto jump = ls.cond_jumps.find(th.pc);
+        if (jump != ls.cond_jumps.end()) {
+          th.pc = jump->second;
+          continue;
+        }
       }
       const Op &op = bc.ops[th.pc];
       if (op.kind == OpKind::LoopStart) {
@@ -359,21 +391,21 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
           th.pc = meta.end_pc + 1;
           continue;
         }
-        th.loop_iter[op.a] = 0;
-        th.invocation_start[op.a] = th.next_available;
-        th.within[op.a].last_value = th.next_available;
+        ls.loop_iter[op.a] = 0;
+        ls.invocation_start[op.a] = th.next_available;
+        ls.within[op.a].last_value = th.next_available;
         if (meta.has_dma && n == 1) {
-          th.invocation_start_dma[op.a] = next_available_dma;
-          th.within_dma[op.a].last_value = next_available_dma;
+          ls.invocation_start_dma[op.a] = next_available_dma;
+          ls.within_dma[op.a].last_value = next_available_dma;
         }
         th.pc++;
         continue;
       }
       if (op.kind == OpKind::LoopEnd) {
         const LoopMeta &meta = bc.loops[op.a];
-        RateTracker &within = th.within[op.a];
-        RateTracker &within_dma = th.within_dma[op.a];
-        uint32_t it = ++th.loop_iter[op.a];
+        RateTracker &within = ls.within[op.a];
+        RateTracker &within_dma = ls.within_dma[op.a];
+        uint32_t it = ++ls.loop_iter[op.a];
 
         if (extrapolate && meta.extrapolatable && !within.gave_up) {
           // With one thread the shared queue's advance per repeat can be
@@ -435,14 +467,14 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
               next_available_dma += remaining * *dma_rate;
             last_completion = std::max(last_completion, th.next_available);
             it = meta.count;
-            th.loop_iter[op.a] = meta.count;
+            ls.loop_iter[op.a] = meta.count;
           }
         } else {
           within.last_value = th.next_available;
         }
 
         if (it >= meta.count) {
-          double duration = th.next_available - th.invocation_start[op.a];
+          double duration = th.next_available - ls.invocation_start[op.a];
           if (extrapolate && meta.extrapolatable && !invocation[op.a].rate) {
             RateTracker &inv = invocation[op.a];
             inv.samples.push_back(duration);
@@ -454,7 +486,7 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
               !invocation_dma[op.a].rate) {
             RateTracker &inv = invocation_dma[op.a];
             inv.samples.push_back(next_available_dma -
-                                  th.invocation_start_dma[op.a]);
+                                  ls.invocation_start_dma[op.a]);
             if (inv.samples.size() > history_cap)
               inv.samples.erase(inv.samples.begin());
             inv.rate = detectAverageRate(inv.samples, window, kTol, kMaxScale);
@@ -465,7 +497,11 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
         }
         continue;
       }
-      return; // Ins or Halt: a real dispatch, or nothing left to do
+      // Ins or Halt: a real dispatch, or nothing left to do. Every path that
+      // moves a cursor comes through here, so this is where the scan's copy
+      // of "is this thread done" is refreshed.
+      th.halted = op.kind == OpKind::Halt;
+      return;
     }
   };
 
@@ -474,7 +510,8 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
 
   double current_cycle = 1;
   size_t round_robin = 0;
-  size_t unfinished = threads.size();
+  const size_t n_threads = threads.size();
+  size_t unfinished = n_threads;
   std::unordered_map<uint32_t, std::unordered_map<uint32_t, double>>
       barrier_waiting;
 
@@ -485,27 +522,43 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
 
   while (unfinished > 0) {
     SimThread *current = nullptr;
-    for (size_t offset = 0; offset < threads.size(); offset++) {
-      SimThread &th = threads[(round_robin + offset) % threads.size()];
-      if (th.parked || bc.ops[th.pc].kind == OpKind::Halt)
+    // The scan doubles as the search for the thread that can issue soonest,
+    // which is where the clock jumps when nobody can issue at this cycle. It
+    // is the same set of threads under the same predicate, and the first one
+    // in round-robin order to attain the minimum is exactly the one a second
+    // pass at the jumped-to cycle would settle on -- so there is no second
+    // pass.
+    SimThread *earliest = nullptr;
+    // Carried alongside the pointer so the comparison below stays in a
+    // register instead of chasing `earliest` on every thread of every scan.
+    double earliest_at = std::numeric_limits<double>::infinity();
+    for (size_t offset = 0; offset < n_threads; offset++) {
+      // `round_robin` and `offset` are both below n_threads, so the wrap is
+      // one subtraction. A `%` here is a hardware divide run once per thread
+      // per dispatch, which profiles as the hottest instruction in the loop.
+      size_t idx = round_robin + offset;
+      if (idx >= n_threads)
+        idx -= n_threads;
+      SimThread &th = threads[idx];
+      if (th.parked || th.halted)
         continue;
       if (th.next_available <= current_cycle) {
         current = &th;
         break;
       }
+      if (th.next_available < earliest_at) {
+        earliest_at = th.next_available;
+        earliest = &th;
+      }
     }
 
     if (!current) {
-      // Nobody can issue at this cycle: jump to the earliest one who can,
-      // rather than stepping cycle by cycle.
-      double soonest = std::numeric_limits<double>::infinity();
-      for (const SimThread &th : threads)
-        if (!th.parked && bc.ops[th.pc].kind != OpKind::Halt)
-          soonest = std::min(soonest, th.next_available);
-      if (!std::isfinite(soonest))
+      if (!earliest)
         break; // every unfinished thread is parked: a barrier nobody reaches
-      current_cycle = soonest;
-      continue;
+      // Nobody could issue at this cycle: jump to the earliest one who can,
+      // rather than stepping cycle by cycle.
+      current_cycle = earliest->next_available;
+      current = earliest;
     }
 
     if (++dispatches % 4096 == 0 &&
@@ -524,8 +577,9 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
       // thread has arrived, and resolving now would let a loop marker
       // sitting right after the barrier extrapolate off that stale value.
       current->pc++;
+      current->halted = bc.ops[current->pc].kind == OpKind::Halt;
 
-      if (barrier_waiting[pos].size() == threads.size()) {
+      if (barrier_waiting[pos].size() == n_threads) {
         double arrival = 0;
         for (const auto &[_, cycle] : barrier_waiting[pos])
           arrival = std::max(arrival, cycle);
@@ -545,7 +599,7 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
           resolve(th);
       }
 
-      round_robin = (current->tid + 1) % threads.size();
+      round_robin = current->tid + 1 == n_threads ? 0 : current->tid + 1;
       current_cycle++;
       continue;
     }
@@ -565,10 +619,10 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
     current->pc++;
     resolve(*current);
     last_completion = std::max(last_completion, completion);
-    if (bc.ops[current->pc].kind == OpKind::Halt)
+    if (current->halted)
       unfinished--;
 
-    round_robin = (current->tid + 1) % threads.size();
+    round_robin = current->tid + 1 == n_threads ? 0 : current->tid + 1;
     current_cycle++;
   }
 
