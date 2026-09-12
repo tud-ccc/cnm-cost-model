@@ -1,12 +1,8 @@
 
 #include <upmem_cost_model/ScatterGatherCm.h>
 
-#ifndef MLPACK_NO_STD_COUT_PRINT
-#define MLPACK_NO_STD_COUT_PRINT
-#endif
 #include <cmath> // std::log2, std::exp
 #include <limits>
-#include <mlpack.hpp>
 
 double upmem_cm::gatherCostMs(int num_dpus, int block_size) {
   if (num_dpus <= 64) {

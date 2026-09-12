@@ -16,10 +16,5 @@ target_include_directories(UpmemCostModel PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-# ScatterGatherCm.cpp's scatterSgCostMs builds an mlpack::FFN internally;
-# PRIVATE since that's confined to the .cpp -- ScatterGatherCm.h's
-# declarations don't expose any mlpack types to consumers.
-target_link_libraries(UpmemCostModel PRIVATE mlpack::mlpack)
-
 find_package(OpenMP REQUIRED COMPONENTS CXX)
 target_link_libraries(UpmemCostModel PRIVATE OpenMP::OpenMP_CXX)
