@@ -221,6 +221,210 @@ double upmem_cm::scatterBlockCostMs(int num_dpus, int block_size) {
   return std::fmax(scatterBlockCostMsModel(num_dpus, block_size), (double)num_dpus * block_size / 4.624084e+07);
 }
 
+// Fitted by model_tree.py on 34040 measured configs (upmemcm/scatter_cost/plots/shared), relRMSE 7.32%.
+namespace {
+double scatterSharedCostMsModel(int num_dpus, int block_size) {
+  if (num_dpus <= 64) {
+    if (num_dpus <= 31) {
+      if (num_dpus <= 1) {
+        if (block_size <= 992) {
+          return 0.01109974 + 0.005103254 * num_dpus + 1.574006e-07 * block_size + 1.537115e-10 * (double)num_dpus * block_size;
+        } else {
+          if (block_size <= 17408) {
+            return 0.01607777 + -1.597803e-15 * num_dpus + 8.568791e-07 * block_size + 8.367959e-10 * (double)num_dpus * block_size;
+          } else {
+            if (block_size <= 294912) {
+              return 0.01291056 + -4.390665e-16 * num_dpus + 9.740788e-07 * block_size + 9.512487e-10 * (double)num_dpus * block_size;
+            } else {
+              return -0.02051234 + 0 * num_dpus + 1.069578e-06 * block_size + 1.04451e-09 * (double)num_dpus * block_size;
+            }
+          }
+        }
+      } else {
+        if (num_dpus <= 2) {
+          if (block_size <= 992) {
+            return 0.01966393 + -0.001416765 * num_dpus + 2.928386e-06 * block_size + 5.719504e-09 * (double)num_dpus * block_size;
+          } else {
+            if (block_size <= 17408) {
+              return 0.01737249 + 0 * num_dpus + 1.58037e-06 * block_size + 3.08666e-09 * (double)num_dpus * block_size;
+            } else {
+              return 0.01996447 + 2.596455e-16 * num_dpus + 1.036103e-06 * block_size + 2.02364e-09 * (double)num_dpus * block_size;
+            }
+          }
+        } else {
+          if (num_dpus <= 2) {
+            if (block_size <= 992) {
+              return 0.03128289 + -0.004575746 * num_dpus + 2.131557e-06 * block_size + 6.235119e-09 * (double)num_dpus * block_size;
+            } else {
+              return 0.01079981 + 0.001914807 * num_dpus + 1.017023e-06 * block_size + 2.954579e-09 * (double)num_dpus * block_size;
+            }
+          } else {
+            if (num_dpus <= 3) {
+              return 0.03015723 + -0.002954991 * num_dpus + 1.048699e-06 * block_size + 4.096479e-09 * (double)num_dpus * block_size;
+            } else {
+              return 0.01344813 + 0.0002917619 * num_dpus + 6.652423e-07 * block_size + 7.623087e-08 * (double)num_dpus * block_size;
+            }
+          }
+        }
+      }
+    } else {
+      if (num_dpus <= 31) {
+        if (block_size <= 1984) {
+          return 0.05242153 + -0.0009094648 * num_dpus + 4.660616e-06 * block_size + 1.456443e-07 * (double)num_dpus * block_size;
+        } else {
+          if (block_size <= 34816) {
+            return 0.02357994 + -2.028341e-05 * num_dpus + 1.574748e-06 * block_size + 4.921086e-08 * (double)num_dpus * block_size;
+          } else {
+            if (block_size <= 2.03162e+06) {
+              return 0.04900883 + 3.672639e-15 * num_dpus + 1.402801e-06 * block_size + 4.383753e-08 * (double)num_dpus * block_size;
+            } else {
+              return -0.4735432 + 0 * num_dpus + 1.481018e-06 * block_size + 4.628182e-08 * (double)num_dpus * block_size;
+            }
+          }
+        }
+      } else {
+        if (num_dpus <= 32) {
+          if (block_size <= 1664) {
+            return 0.05174445 + -0.0007449136 * num_dpus + 4.302516e-06 * block_size + 1.428552e-07 * (double)num_dpus * block_size;
+          } else {
+            return -0.002979044 + 0.0008557288 * num_dpus + 2.117561e-06 * block_size + 7.030974e-08 * (double)num_dpus * block_size;
+          }
+        } else {
+          if (num_dpus <= 36) {
+            if (block_size <= 992) {
+              return 0.01455622 + 0.0001912083 * num_dpus + 4.533936e-06 * block_size + 1.593965e-07 * (double)num_dpus * block_size;
+            } else {
+              return 0.03669738 + -0.0003584419 * num_dpus + 1.986014e-06 * block_size + 6.98201e-08 * (double)num_dpus * block_size;
+            }
+          } else {
+            if (num_dpus <= 36) {
+              return 0.02113721 + 7.214413e-05 * num_dpus + 1.85668e-06 * block_size + 6.889988e-08 * (double)num_dpus * block_size;
+            } else {
+              return 0.01871558 + 0.000143031 * num_dpus + 4.458321e-06 * block_size + 3.89672e-10 * (double)num_dpus * block_size;
+            }
+          }
+        }
+      }
+    }
+  } else {
+    if (num_dpus <= 384) {
+      if (block_size <= 320) {
+        if (num_dpus <= 76) {
+          return 0.08008999 + -0.0005801 * num_dpus + 1.583046e-05 * block_size + -3.454616e-08 * (double)num_dpus * block_size;
+        } else {
+          if (num_dpus <= 88) {
+            return 0.03687101 + 3.519971e-05 * num_dpus + -0.0001209243 * block_size + 1.707832e-06 * (double)num_dpus * block_size;
+          } else {
+            if (num_dpus <= 100) {
+              return 0.06474288 + -0.0002596725 * num_dpus + 3.347906e-05 * block_size + -1.431084e-07 * (double)num_dpus * block_size;
+            } else {
+              return 0.02947621 + 8.230768e-05 * num_dpus + 2.297825e-05 * block_size + 1.088504e-08 * (double)num_dpus * block_size;
+            }
+          }
+        }
+      } else {
+        if (num_dpus <= 72) {
+          if (block_size <= 1664) {
+            return 0.05214266 + -0.0001783764 * num_dpus + 2.448835e-05 * block_size + -7.695528e-08 * (double)num_dpus * block_size;
+          } else {
+            if (block_size <= 27648) {
+              return 0.06540088 + -0.0003331572 * num_dpus + 7.916236e-06 * block_size + 1.408902e-08 * (double)num_dpus * block_size;
+            } else {
+              return -0.7551727 + 0.01167681 * num_dpus + 9.347528e-06 * block_size + -3.002862e-08 * (double)num_dpus * block_size;
+            }
+          }
+        } else {
+          if (block_size <= 992) {
+            return 0.03024834 + 7.434719e-05 * num_dpus + 2.498724e-05 * block_size + 3.485895e-08 * (double)num_dpus * block_size;
+          } else {
+            if (block_size <= 1984) {
+              return 0.03965439 + 0.0001005015 * num_dpus + 1.135852e-05 * block_size + -1.078697e-08 * (double)num_dpus * block_size;
+            } else {
+              return 0.02866341 + 0.0001194638 * num_dpus + 8.859677e-06 * block_size + 1.36498e-09 * (double)num_dpus * block_size;
+            }
+          }
+        }
+      }
+    } else {
+      if (num_dpus <= 448) {
+        if (block_size <= 25600) {
+          if (block_size <= 992) {
+            if (num_dpus <= 384) {
+              return 0.1010982 + -6.369633e-05 * num_dpus + 2.85441e-07 * block_size + 1.115004e-07 * (double)num_dpus * block_size;
+            } else {
+              return 0.04434444 + 6.572967e-05 * num_dpus + -5.93213e-05 * block_size + 2.441526e-07 * (double)num_dpus * block_size;
+            }
+          } else {
+            if ((double)num_dpus * block_size <= 933888) {
+              return 0.1878495 + -0.000235281 * num_dpus + -9.301025e-05 * block_size + 2.595579e-07 * (double)num_dpus * block_size;
+            } else {
+              return 0.08443258 + -2.996661e-05 * num_dpus + 1.843972e-05 * block_size + -2.525943e-09 * (double)num_dpus * block_size;
+            }
+          }
+        } else {
+          if (block_size <= 81920) {
+            return 1.038792 + -0.002029698 * num_dpus + -2.358982e-05 * block_size + 8.744409e-08 * (double)num_dpus * block_size;
+          } else {
+            if (num_dpus <= 400) {
+              return -6.153751 + 0.01553981 * num_dpus + 2.378436e-05 * block_size + -2.56251e-08 * (double)num_dpus * block_size;
+            } else {
+              return -0.4673483 + 0.001267824 * num_dpus + 1.517536e-05 * block_size + -3.87274e-09 * (double)num_dpus * block_size;
+            }
+          }
+        }
+      } else {
+        if (block_size <= 992) {
+          if (num_dpus <= 480) {
+            return 0.03533763 + 0.0001086489 * num_dpus + 0.0001047804 * block_size + -9.399123e-08 * (double)num_dpus * block_size;
+          } else {
+            if (num_dpus <= 832) {
+              return 0.04182681 + 9.374919e-05 * num_dpus + 6.78545e-05 * block_size + 2.029011e-09 * (double)num_dpus * block_size;
+            } else {
+              return 0.05511202 + 7.097407e-05 * num_dpus + 7.447095e-05 * block_size + -6.165894e-09 * (double)num_dpus * block_size;
+            }
+          }
+        } else {
+          if (block_size <= 1984) {
+            if (block_size <= 992) {
+              return 0.5922741 + 5.325641e-05 * num_dpus + -0.0004842016 * block_size + 1.873513e-08 * (double)num_dpus * block_size;
+            } else {
+              return 0.05942802 + 6.487445e-05 * num_dpus + 3.449821e-05 * block_size + 4.933389e-09 * (double)num_dpus * block_size;
+            }
+          } else {
+            if ((double)num_dpus * block_size <= 7.22534e+06) {
+              return 0.07067291 + 4.522857e-05 * num_dpus + 1.524752e-05 * block_size + 1.014712e-08 * (double)num_dpus * block_size;
+            } else {
+              return 0.1387594 + 2.406374e-05 * num_dpus + 1.573487e-05 * block_size + 4.634186e-09 * (double)num_dpus * block_size;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+} // namespace
+
+double upmem_cm::scatterSharedCostMs(int num_dpus, int block_size) {
+  // No transfer beats the fastest rate this sweep measured (8.58259e+07 B/ms);
+  // outside its fitted region a leaf's linear model can slope below zero.
+  return std::fmax(scatterSharedCostMsModel(num_dpus, block_size), (double)num_dpus * block_size / 8.582594e+07);
+}
+
+double upmem_cm::scatterReplicatedCostMs(int num_dpus, int block_size, double unique_bytes) {
+  const double written = (double)num_dpus * block_size;
+  if (unique_bytes >= written)
+    return scatterBlockCostMs(num_dpus, block_size);
+  // T_xfer(D, B) + T_read(U, D). The read of U unique bytes on D DPUs is what
+  // distinct data costs over a shared source at the block size that has U
+  // bytes in all: for distinct data U = D * B, so B_read = U / D.
+  const int read_block = (int)std::fmax(1.0, std::round(unique_bytes / num_dpus));
+  const double read = scatterBlockCostMs(num_dpus, read_block) - scatterSharedCostMs(num_dpus, read_block);
+  // Below the knee the two trees differ by noise of either sign; and no
+  // source costs more than distinct data of the same geometry.
+  return std::fmin(scatterSharedCostMs(num_dpus, block_size) + std::fmax(0.0, read),
+                   scatterBlockCostMs(num_dpus, block_size));
+}
+
 // Fitted by model_tree.py on 34212 measured configs (upmemcm/scatter_cost/plots/gather), relRMSE 7.78%.
 namespace {
 double gatherCostMsModel(int num_dpus, int block_size) {
