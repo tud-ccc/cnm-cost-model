@@ -65,6 +65,10 @@ struct SimInsn {
   /// Optional static string literal naming what this instruction came from
   /// ("iv increment", "pointer bump", ...). Never owned, never freed.
   const char *note = nullptr;
+  /// Pipeline issue slots the instruction takes: 1 for a real instruction,
+  /// more for one standing for a library call, whose instructions each take
+  /// a slot of their own. See kMulCallOverhead.
+  uint32_t issue_slots = 1;
 };
 
 struct LoopInfo {
@@ -88,6 +92,15 @@ struct ConditionalInfo {
 // significant bit of the smaller operand: 88 cycles of call overhead plus 11
 // per step. Cost is therefore data-dependent, anywhere from one step to the
 // full 32.
+//
+// Those cycles are instructions, 11 each for a lone tasklet: 8 for the call,
+// the operand swap and the return, and one mul_step per bit. The call is
+// therefore charged its cycles as latency and latency / 11 issue slots. The
+// latency is what one tasklet waits; the slots are what it takes from the
+// others, and from 11 tasklets up, with the pipeline full, they are the cost.
+// Priced as one slot, the call let 15 other tasklets issue through it, and
+// an i32 mmtv kernel at 16 tasklets was predicted at 10 cycles per
+// multiply-accumulate against 16 measured.
 //
 // When one operand is a known power-of-2 constant the step count is exactly
 // log2(imm), which is what lookupMulImmLatency returns -- reproducing the

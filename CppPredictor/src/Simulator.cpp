@@ -623,7 +623,8 @@ ProgramBuilderImpl::simulateScheduled(int nTasklets, uint64_t freqHz,
       unfinished--;
 
     round_robin = current->tid + 1 == n_threads ? 0 : current->tid + 1;
-    current_cycle++;
+    // One instruction issues per cycle; a library call stands for several.
+    current_cycle += insn.issue_slots;
   }
 
   // The reference model adds a constant base_time to this before returning,

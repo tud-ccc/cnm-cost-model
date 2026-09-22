@@ -59,14 +59,18 @@ void ProgramBuilderImpl::emitMovLike(SimOp op, const char *note) {
 
 void ProgramBuilderImpl::emitPipe(StatOp op, DType dt, int mul_imm) {
   uint32_t lat;
+  uint32_t slots = 1;
   if (op == StatOp::MUL && isMulLibCallType(dt)) {
     // 32-bit multiply is a __mulsi3 call, never a single instruction; the
-    // static table has no entry for it. See lookupMulImmLatency.
+    // static table has no entry for it. See lookupMulImmLatency, and
+    // kMulCallOverhead for the issue slots.
     lat = mul_imm >= 0 ? lookupMulImmLatency(mul_imm) : kMulGeneralLatency;
+    slots = lat / kMulStepLatency;
   } else {
     lat = lookupStaticLatency(op, dt);
   }
   SimInsn insn{lat, SimKind::PIPE};
+  insn.issue_slots = slots;
   insn.op = statOpToSimOp(op);
   insn.dtype = dt;
   if (op == StatOp::MUL)
