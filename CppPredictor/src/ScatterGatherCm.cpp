@@ -428,237 +428,339 @@ double upmem_cm::scatterReplicatedCostMs(int num_dpus, int block_size, double un
 // Fitted by model_tree.py on 34212 measured configs (upmemcm/scatter_cost/plots/gather), relRMSE 7.78%.
 namespace {
 double gatherCostMsModel(int num_dpus, int block_size) {
-  if (num_dpus <= 64) {
-    if ((double)num_dpus * block_size <= 5586944) {
-      if (num_dpus <= 14) {
-        if (num_dpus <= 1) {
-          if (block_size <= 1024) {
-            return 0.02191889 + 0 * num_dpus + 3.641079e-06 * block_size + 8.889351e-10 * (double)num_dpus * block_size;
-          } else {
-            if (block_size <= 18432) {
-              return 0.02008055 + 0 * num_dpus + 4.102755e-06 * block_size + 1.001649e-09 * (double)num_dpus * block_size;
+  if ((double)num_dpus * block_size <= 28311552) {
+    if (block_size <= 928) {
+      if (num_dpus <= 448) {
+        if (num_dpus <= 128) {
+          if (num_dpus <= 72) {
+            if ((double)num_dpus * block_size <= 16704) {
+              return -0.09237899 + 0.001891463 * num_dpus +
+                     -4.911007e-05 * block_size +
+                     1.780432e-06 * (double)num_dpus * block_size;
             } else {
-              return 0.02066055 + -4.96515e-16 * num_dpus + 4.075728e-06 * block_size + 9.950508e-10 * (double)num_dpus * block_size;
+              return -0.08673185 + 0.00181376 * num_dpus +
+                     -2.112057e-05 * block_size +
+                     1.356446e-06 * (double)num_dpus * block_size;
+            }
+          } else {
+            if (num_dpus <= 112) {
+              return 0.0365699 + 2.64976e-05 * num_dpus +
+                     6.188797e-07 * block_size +
+                     1.03757e-06 * (double)num_dpus * block_size;
+            } else {
+              return 0.113041 + -0.0005742892 * num_dpus +
+                     3.306861e-05 * block_size +
+                     7.702819e-07 * (double)num_dpus * block_size;
             }
           }
         } else {
-          if (num_dpus <= 2) {
-            if (block_size <= 1024) {
-              return 0.02994615 + -0.004240095 * num_dpus + 4.672222e-06 * block_size + 2.281358e-09 * (double)num_dpus * block_size;
+          if (num_dpus <= 384) {
+            if (num_dpus <= 336) {
+              return 0.03099095 + 8.021548e-05 * num_dpus +
+                     9.270775e-05 * block_size +
+                     1.159126e-07 * (double)num_dpus * block_size;
             } else {
-              return 0.02039203 + -2.877088e-16 * num_dpus + 4.07329e-06 * block_size + 1.988911e-09 * (double)num_dpus * block_size;
+              return 0.03393413 + 7.979491e-05 * num_dpus +
+                     0.0008582883 * block_size +
+                     -1.915898e-06 * (double)num_dpus * block_size;
             }
           } else {
-            if (num_dpus <= 3) {
-              return 0.01804256 + 0.001152638 * num_dpus + 3.970825e-06 * block_size + 2.906662e-09 * (double)num_dpus * block_size;
+            if (num_dpus <= 416) {
+              return 0.2331548 + -0.0003856053 * num_dpus +
+                     0.0002462551 * block_size +
+                     -1.798145e-07 * (double)num_dpus * block_size;
             } else {
-              return 0.02146288 + 0.0002854237 * num_dpus + 4.223511e-06 * block_size + 1.566628e-08 * (double)num_dpus * block_size;
+              return -0.09285108 + 0.0003900555 * num_dpus +
+                     -0.0005405983 * block_size +
+                     1.665326e-06 * (double)num_dpus * block_size;
             }
           }
         }
       } else {
-        if (block_size <= 1920) {
-          if (num_dpus <= 15) {
-            return 0.02349903 + 0 * num_dpus + 8.047635e-06 * block_size + 2.947132e-08 * (double)num_dpus * block_size;
-          } else {
-            if (num_dpus <= 16) {
-              return 0.02452969 + 0 * num_dpus + 8.734861e-06 * block_size + 3.412055e-08 * (double)num_dpus * block_size;
+        if (num_dpus <= 992) {
+          if (num_dpus <= 640) {
+            if (num_dpus <= 512) {
+              return 0.02247007 + 0.0001463287 * num_dpus +
+                     -0.0001309009 * block_size +
+                     7.67916e-07 * (double)num_dpus * block_size;
             } else {
-              return 0.0171645 + 0.0002357056 * num_dpus + 1.944119e-05 * block_size + 3.349908e-07 * (double)num_dpus * block_size;
+              return 0.01636287 + 0.0001501846 * num_dpus +
+                     0.0001030464 * block_size +
+                     2.563335e-07 * (double)num_dpus * block_size;
+            }
+          } else {
+            if (num_dpus <= 704) {
+              return 0.2368422 + -0.0001890325 * num_dpus +
+                     -0.0009989664 * block_size +
+                     1.866881e-06 * (double)num_dpus * block_size;
+            } else {
+              return 0.05383726 + 8.647769e-05 * num_dpus +
+                     0.0002613707 * block_size +
+                     1.323624e-11 * (double)num_dpus * block_size;
             }
           }
         } else {
-          if (num_dpus <= 32) {
-            if (num_dpus <= 16) {
-              return 0.07632419 + -0.003215625 * num_dpus + 4.435021e-06 * block_size + -1.350654e-09 * (double)num_dpus * block_size;
+          if (num_dpus <= 1792) {
+            if (block_size <= 56) {
+              return 0.06847887 + 7.014725e-05 * num_dpus +
+                     0.0001074069 * block_size +
+                     -8.321696e-08 * (double)num_dpus * block_size;
             } else {
-              return 0.01933245 + 0.0002071742 * num_dpus + 8.348742e-06 * block_size + 4.116021e-10 * (double)num_dpus * block_size;
+              return 0.07343707 + 5.508688e-05 * num_dpus +
+                     0.0002379169 * block_size +
+                     2.400553e-08 * (double)num_dpus * block_size;
             }
           } else {
-            if (num_dpus <= 60) {
-              return 0.02847075 + -4.685471e-05 * num_dpus + 1.641309e-05 * block_size + 5.490876e-09 * (double)num_dpus * block_size;
+            if (num_dpus <= 1920) {
+              return -0.3514457 + 0.0002865513 * num_dpus +
+                     0.005469547 * block_size +
+                     -2.716795e-06 * (double)num_dpus * block_size;
             } else {
-              return -1.282761 + 0.0210838 * num_dpus + -1.260307e-05 * block_size + 4.727303e-07 * (double)num_dpus * block_size;
-            }
-          }
-        }
-      }
-    } else {
-      if (num_dpus <= 32) {
-        if (num_dpus <= 16) {
-          if ((double)num_dpus * block_size <= 24510464) {
-            if ((double)num_dpus * block_size <= 13565952) {
-              return 0.232738 + -0.03174003 * num_dpus + 3.868935e-06 * block_size + 7.487674e-08 * (double)num_dpus * block_size;
-            } else {
-              return 0.225471 + -0.1481511 * num_dpus + 3.682988e-06 * block_size + 2.016711e-07 * (double)num_dpus * block_size;
-            }
-          } else {
-            if (num_dpus <= 7) {
-              return -7.505733 + 0.4403123 * num_dpus + 3.552122e-06 * block_size + 4.264799e-07 * (double)num_dpus * block_size;
-            } else {
-              return -6.236155 + 0.2231363 * num_dpus + 6.631722e-06 * block_size + 2.971615e-08 * (double)num_dpus * block_size;
-            }
-          }
-        } else {
-          if ((double)num_dpus * block_size <= 16515072) {
-            if (block_size <= 425984) {
-              return 0.1242969 + -0.007950161 * num_dpus + 7.716706e-06 * block_size + 4.030752e-08 * (double)num_dpus * block_size;
-            } else {
-              return 0.4591393 + -0.06128193 * num_dpus + 6.582891e-06 * block_size + 1.76986e-07 * (double)num_dpus * block_size;
-            }
-          } else {
-            if (block_size <= 1114112) {
-              return -0.4923229 + -0.0879438 * num_dpus + 7.320605e-06 * block_size + 2.457676e-07 * (double)num_dpus * block_size;
-            } else {
-              return -7.004457 + 0.1349104 * num_dpus + 1.325378e-05 * block_size + 2.864367e-08 * (double)num_dpus * block_size;
-            }
-          }
-        }
-      } else {
-        if ((double)num_dpus * block_size <= 14942208) {
-          if ((double)num_dpus * block_size <= 11141120) {
-            if (block_size <= 139264) {
-              return -1.727686 + 0.03224061 * num_dpus + 3.08291e-05 * block_size + -2.614022e-07 * (double)num_dpus * block_size;
-            } else {
-              return 0.09409118 + -0.002892203 * num_dpus + 1.61152e-05 * block_size + 2.082676e-08 * (double)num_dpus * block_size;
-            }
-          } else {
-            return -0.8403893 + 0.002920683 * num_dpus + 1.819476e-05 * block_size + 3.505336e-08 * (double)num_dpus * block_size;
-          }
-        } else {
-          if (block_size <= 1114112) {
-            if ((double)num_dpus * block_size <= 24510464) {
-              return -3.549847 + 0.01041811 * num_dpus + 2.078501e-05 * block_size + 1.347533e-07 * (double)num_dpus * block_size;
-            } else {
-              return -6.874934 + 0.05861217 * num_dpus + 2.770389e-05 * block_size + 4.06132e-08 * (double)num_dpus * block_size;
-            }
-          } else {
-            if ((double)num_dpus * block_size <= 409993216) {
-              return -7.838779 + 0.0685446 * num_dpus + 2.663744e-05 * block_size + 4.087748e-08 * (double)num_dpus * block_size;
-            } else {
-              return 8.364624 + -0.02184495 * num_dpus + 2.582475e-05 * block_size + 3.497096e-08 * (double)num_dpus * block_size;
-            }
-          }
-        }
-      }
-    }
-  } else {
-    if ((double)num_dpus * block_size <= 24510464) {
-      if (block_size <= 960) {
-        if (num_dpus <= 416) {
-          if (num_dpus <= 80) {
-            if (num_dpus <= 72) {
-              return -0.01393102 + 0.0007819741 * num_dpus + 5.944326e-06 * block_size + 9.727544e-07 * (double)num_dpus * block_size;
-            } else {
-              return 0.1019767 + -0.000810456 * num_dpus + 6.026312e-05 * block_size + 2.636605e-07 * (double)num_dpus * block_size;
-            }
-          } else {
-            if (num_dpus <= 116) {
-              return 0.0244609 + 0.0001561971 * num_dpus + 3.476525e-07 * block_size + 1.044791e-06 * (double)num_dpus * block_size;
-            } else {
-              return 0.02839603 + 9.51941e-05 * num_dpus + 9.366046e-05 * block_size + 1.306287e-07 * (double)num_dpus * block_size;
-            }
-          }
-        } else {
-          if (num_dpus <= 464) {
-            if (block_size <= 184) {
-              return -0.09704914 + 0.0004008848 * num_dpus + -0.0004595587 * block_size + 1.468153e-06 * (double)num_dpus * block_size;
-            } else {
-              return -0.110661 + 0.0004290713 * num_dpus + -0.0004671044 * block_size + 1.500613e-06 * (double)num_dpus * block_size;
-            }
-          } else {
-            if (num_dpus <= 896) {
-              return 0.05244535 + 8.711628e-05 * num_dpus + 0.0002206339 * block_size + 5.819635e-08 * (double)num_dpus * block_size;
-            } else {
-              return 0.0681193 + 6.380887e-05 * num_dpus + 0.0002381461 * block_size + 2.041713e-08 * (double)num_dpus * block_size;
-            }
-          }
-        }
-      } else {
-        if (num_dpus <= 448) {
-          if (block_size <= 1920) {
-            if (num_dpus <= 352) {
-              return 0.03598177 + 0.0001550412 * num_dpus + 6.178284e-05 * block_size + -2.796526e-08 * (double)num_dpus * block_size;
-            } else {
-              return -0.135209 + 0.0005624804 * num_dpus + 0.0002354018 * block_size + -3.597646e-07 * (double)num_dpus * block_size;
-            }
-          } else {
-            if (num_dpus <= 384) {
-              return 0.01879232 + 0.0002635586 * num_dpus + 3.016453e-05 * block_size + 2.426433e-08 * (double)num_dpus * block_size;
-            } else {
-              return -0.4176737 + 0.001287378 * num_dpus + 0.0001950273 * block_size + -3.258881e-07 * (double)num_dpus * block_size;
-            }
-          }
-        } else {
-          if (block_size <= 1920) {
-            if (block_size <= 1024) {
-              return 0.2401747 + 0.00281737 * num_dpus + -9.220355e-06 * block_size + -2.691001e-06 * (double)num_dpus * block_size;
-            } else {
-              return 0.08250055 + 4.586715e-05 * num_dpus + 0.0001077884 * block_size + 4.760621e-08 * (double)num_dpus * block_size;
-            }
-          } else {
-            if (num_dpus <= 960) {
-              return 0.09682515 + 0.0001024661 * num_dpus + 4.722438e-05 * block_size + 5.108922e-08 * (double)num_dpus * block_size;
-            } else {
-              return 0.3101715 + -7.337618e-05 * num_dpus + 2.126034e-05 * block_size + 5.281688e-08 * (double)num_dpus * block_size;
+              return -0.244983 + 0.0002271849 * num_dpus +
+                     0.0003313689 * block_size +
+                     -3.915946e-08 * (double)num_dpus * block_size;
             }
           }
         }
       }
     } else {
       if (num_dpus <= 448) {
-        if (num_dpus <= 384) {
-          if (num_dpus <= 72) {
-            if ((double)num_dpus * block_size <= 98041856) {
-              return 5.556363 + -0.1300075 * num_dpus + 2.512719e-05 * block_size + 2.590751e-07 * (double)num_dpus * block_size;
+        if (num_dpus <= 72) {
+          if (block_size <= 15872) {
+            if ((double)num_dpus * block_size <= 170752) {
+              return -0.5972334 + 0.01018056 * num_dpus +
+                     0.0001507258 * block_size +
+                     -2.093954e-06 * (double)num_dpus * block_size;
             } else {
-              return -11.28636 + 0.0930933 * num_dpus + 4.708983e-05 * block_size + -6.890673e-08 * (double)num_dpus * block_size;
+              return -0.1143049 + 0.002211126 * num_dpus +
+                     1.291625e-05 * block_size +
+                     2.245896e-07 * (double)num_dpus * block_size;
             }
           } else {
-            if ((double)num_dpus * block_size <= 39911424) {
-              return -3.059682 + 0.001458298 * num_dpus + 4.796057e-05 * block_size + 8.298355e-08 * (double)num_dpus * block_size;
+            if ((double)num_dpus * block_size <= 11403264) {
+              return -1.78314 + 0.02780151 * num_dpus +
+                     -4.145027e-05 * block_size +
+                     9.340895e-07 * (double)num_dpus * block_size;
             } else {
-              return -2.207048 + 0.003350901 * num_dpus + 5.280952e-05 * block_size + 3.199724e-08 * (double)num_dpus * block_size;
+              return 5.057836 + -0.1065672 * num_dpus +
+                     -9.22663e-05 * block_size +
+                     1.853839e-06 * (double)num_dpus * block_size;
             }
           }
         } else {
-          if (block_size <= 139264) {
-            return -5.836775 + 0.007168429 * num_dpus + 0.0001194531 * block_size + -2.726254e-08 * (double)num_dpus * block_size;
-          } else {
-            if ((double)num_dpus * block_size <= 409993216) {
-              return 1.979561 + -0.007289729 * num_dpus + 6.158121e-05 * block_size + 7.796775e-08 * (double)num_dpus * block_size;
+          if (block_size <= 1920) {
+            if (block_size <= 1024) {
+              return 0.4598444 + 0.001835545 * num_dpus +
+                     -0.0003620683 * block_size +
+                     -1.611188e-06 * (double)num_dpus * block_size;
             } else {
-              return 16.52689 + -0.02878572 * num_dpus + 4.661622e-05 * block_size + 9.874663e-08 * (double)num_dpus * block_size;
+              return 0.02439581 + 0.000119184 * num_dpus +
+                     6.038933e-05 * block_size +
+                     5.33793e-08 * (double)num_dpus * block_size;
+            }
+          } else {
+            if (num_dpus <= 384) {
+              return 0.01139155 + 0.0002892835 * num_dpus +
+                     3.280753e-05 * block_size +
+                     1.425547e-08 * (double)num_dpus * block_size;
+            } else {
+              return -0.3572319 + 0.001140808 * num_dpus +
+                     0.0001816854 * block_size +
+                     -2.935805e-07 * (double)num_dpus * block_size;
             }
           }
         }
       } else {
-        if ((double)num_dpus * block_size <= 144703488) {
-          if (block_size <= 45056) {
-            if (num_dpus <= 1024) {
-              return 0.9708035 + -0.002426013 * num_dpus + 2.681059e-05 * block_size + 1.250414e-07 * (double)num_dpus * block_size;
+        if (num_dpus <= 992) {
+          if (block_size <= 1920) {
+            if (block_size <= 1152) {
+              return 0.5850974 + 0.0001660476 * num_dpus +
+                     -0.0003707896 * block_size +
+                     -1.748946e-08 * (double)num_dpus * block_size;
             } else {
-              return 0.01098418 + -0.0002163832 * num_dpus + 2.792781e-05 * block_size + 6.719725e-08 * (double)num_dpus * block_size;
+              return -0.01575861 + 0.0001992938 * num_dpus +
+                     0.0001594568 * block_size +
+                     -2.889208e-08 * (double)num_dpus * block_size;
             }
           } else {
-            if (num_dpus <= 928) {
-              return -4.29597 + 0.003384822 * num_dpus + 0.0001134858 * block_size + 4.203855e-08 * (double)num_dpus * block_size;
+            if (block_size <= 13312) {
+              return 0.0186956 + 0.0001667577 * num_dpus +
+                     6.982072e-05 * block_size +
+                     3.169474e-08 * (double)num_dpus * block_size;
             } else {
-              return 0.5119057 + -0.003202554 * num_dpus + 2.823688e-05 * block_size + 1.314367e-07 * (double)num_dpus * block_size;
+              return -0.4448802 + 0.0008683824 * num_dpus +
+                     6.748883e-05 * block_size +
+                     1.956139e-08 * (double)num_dpus * block_size;
             }
           }
         } else {
-          if (block_size <= 278528) {
-            if (num_dpus <= 1920) {
-              return -6.489185 + 0.00185412 * num_dpus + 8.574424e-05 * block_size + 9.282208e-08 * (double)num_dpus * block_size;
+          if (block_size <= 1920) {
+            if (block_size <= 1152) {
+              return 0.7673696 + -9.91443e-06 * num_dpus +
+                     -0.0005532607 * block_size +
+                     1.231586e-07 * (double)num_dpus * block_size;
             } else {
-              return 149.5656 + -0.07648676 * num_dpus + 0.001030108 * block_size + -3.834115e-07 * (double)num_dpus * block_size;
+              return 0.08275317 + 4.551313e-05 * num_dpus +
+                     4.383072e-05 * block_size +
+                     8.772125e-08 * (double)num_dpus * block_size;
+            }
+          } else {
+            if (num_dpus <= 1088) {
+              return -0.3389822 + 0.0005728106 * num_dpus +
+                     8.184354e-05 * block_size +
+                     -1.848709e-08 * (double)num_dpus * block_size;
+            } else {
+              return 0.2026986 + -8.95763e-06 * num_dpus +
+                     5.515719e-05 * block_size +
+                     3.25825e-08 * (double)num_dpus * block_size;
+            }
+          }
+        }
+      }
+    }
+  } else {
+    if (num_dpus <= 448) {
+      if (num_dpus <= 72) {
+        if (num_dpus <= 64) {
+          return -2.525797 + 6.74273e-15 * num_dpus +
+                 2.321223e-05 * block_size +
+                 9.067275e-08 * (double)num_dpus * block_size;
+        } else {
+          if ((double)num_dpus * block_size <= 121110528) {
+            return 4.890316 + -0.1064586 * num_dpus +
+                   2.968825e-05 * block_size +
+                   1.725858e-07 * (double)num_dpus * block_size;
+          } else {
+            return -5.041809 + 0.004948179 * num_dpus +
+                   4.595558e-05 * block_size +
+                   -5.288041e-08 * (double)num_dpus * block_size;
+          }
+        }
+      } else {
+        if (num_dpus <= 384) {
+          if ((double)num_dpus * block_size <= 49020928) {
+            if (num_dpus <= 176) {
+              return -5.135445 + 0.007566734 * num_dpus +
+                     5.082056e-05 * block_size +
+                     1.008445e-07 * (double)num_dpus * block_size;
+            } else {
+              return -2.375088 + 0.0007813295 * num_dpus +
+                     4.951871e-05 * block_size +
+                     6.23432e-08 * (double)num_dpus * block_size;
+            }
+          } else {
+            if (num_dpus <= 192) {
+              return -3.247634 + 0.01072805 * num_dpus +
+                     5.382612e-05 * block_size +
+                     2.540381e-08 * (double)num_dpus * block_size;
+            } else {
+              return -0.9123144 + -0.0005145145 * num_dpus +
+                     4.799321e-05 * block_size +
+                     4.783333e-08 * (double)num_dpus * block_size;
+            }
+          }
+        } else {
+          if (block_size <= 139264) {
+            return -5.959759 + 0.007650582 * num_dpus +
+                   0.0001211518 * block_size +
+                   -3.308086e-08 * (double)num_dpus * block_size;
+          } else {
+            if ((double)num_dpus * block_size <= 436207616) {
+              return 1.746943 + -0.006727912 * num_dpus +
+                     6.261195e-05 * block_size +
+                     7.547756e-08 * (double)num_dpus * block_size;
+            } else {
+              return 2.037398 + 0.003911303 * num_dpus +
+                     5.447507e-05 * block_size +
+                     8.101308e-08 * (double)num_dpus * block_size;
+            }
+          }
+        }
+      }
+    } else {
+      if (block_size <= 139264) {
+        if ((double)num_dpus * block_size <= 77201408) {
+          if (num_dpus <= 928) {
+            if (num_dpus <= 736) {
+              return -3.04786 + 0.0005339256 * num_dpus +
+                     0.0001058692 * block_size +
+                     6.581356e-08 * (double)num_dpus * block_size;
+            } else {
+              return 0.3618389 + -0.001747513 * num_dpus +
+                     0.0001153405 * block_size +
+                     3.692764e-08 * (double)num_dpus * block_size;
             }
           } else {
             if (num_dpus <= 1024) {
-              return -1.913445 + 0.004528961 * num_dpus + 9.6107e-05 * block_size + 5.311315e-08 * (double)num_dpus * block_size;
+              return -15.26477 + 0.01418449 * num_dpus +
+                     0.0001040228 * block_size +
+                     3.67969e-08 * (double)num_dpus * block_size;
             } else {
-              return -16.40117 + 0.02365748 * num_dpus + 8.992732e-05 * block_size + 3.366586e-08 * (double)num_dpus * block_size;
+              return -1.676372 + 0.000667336 * num_dpus +
+                     9.095017e-05 * block_size +
+                     3.325265e-08 * (double)num_dpus * block_size;
+            }
+          }
+        } else {
+          if (num_dpus <= 1856) {
+            if (num_dpus <= 1088) {
+              return -2.037217 + 0.0005246185 * num_dpus +
+                     0.0001100237 * block_size +
+                     4.387899e-08 * (double)num_dpus * block_size;
+            } else {
+              return -5.016711 + -0.0001379078 * num_dpus +
+                     4.474872e-05 * block_size +
+                     1.290888e-07 * (double)num_dpus * block_size;
+            }
+          } else {
+            return -52.73186 + 0.02486187 * num_dpus +
+                   0.001746399 * block_size +
+                   -7.559785e-07 * (double)num_dpus * block_size;
+          }
+        }
+      } else {
+        if (block_size <= 294912) {
+          if (num_dpus <= 1280) {
+            if (num_dpus <= 832) {
+              return -1.952075 + 0.00146218 * num_dpus +
+                     9.055065e-05 * block_size +
+                     6.871583e-08 * (double)num_dpus * block_size;
+            } else {
+              return 6.593389 + -0.007806374 * num_dpus +
+                     3.93677e-05 * block_size +
+                     1.184273e-07 * (double)num_dpus * block_size;
+            }
+          } else {
+            if (num_dpus <= 1792) {
+              return -15.75527 + 0.009036464 * num_dpus +
+                     0.0001196981 * block_size +
+                     6.641057e-08 * (double)num_dpus * block_size;
+            } else {
+              return 98.8056 + -0.05369028 * num_dpus +
+                     0.0001372969 * block_size +
+                     6.949651e-08 * (double)num_dpus * block_size;
+            }
+          }
+        } else {
+          if (num_dpus <= 1024) {
+            if (num_dpus <= 800) {
+              return 6.065898 + -0.01000127 * num_dpus +
+                     7.239538e-05 * block_size +
+                     9.642527e-08 * (double)num_dpus * block_size;
+            } else {
+              return -44.63144 + 0.05361989 * num_dpus +
+                     0.0001590235 * block_size +
+                     -2.227922e-08 * (double)num_dpus * block_size;
+            }
+          } else {
+            if (num_dpus <= 1600) {
+              return -85.60727 + 0.07997137 * num_dpus +
+                     0.0001836656 * block_size +
+                     -4.19871e-08 * (double)num_dpus * block_size;
+            } else {
+              return -87.03754 + 0.0591148 * num_dpus +
+                     0.000108635 * block_size +
+                     2.68604e-08 * (double)num_dpus * block_size;
             }
           }
         }
